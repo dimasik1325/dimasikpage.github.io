@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моё сердце для тебя</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@300;400;600&display=swap');
+        
+        .heart {
+            animation: beat 1s ease infinite;
+            transform-origin: center;
+        }
+        
+        @keyframes beat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 1.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .typing {
+            overflow: hidden;
+            border-right: 2px solid #ec4899;
+            white-space: nowrap;
+            animation: typing 2s steps(30, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #ec4899 }
+        }
+        
+        .petal {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            animation: fall linear forwards;
+        }
+        
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+        
+        .sparkle {
+            position: fixed;
+            background: radial-gradient(circle, #fff, #fbcfe8);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            animation: sparkleAnim 1.5s ease-out forwards;
+        }
+        
+        @keyframes sparkleAnim {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(1.5) rotate(180deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-pink-100 via-rose-100 to-red-100 flex items-center justify-center font-['Inter']">
+    
+    <!-- Страница ввода имени -->
+    <div id="namePage" class="text-center p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl max-w-md w-full mx-4">
+        <div class="heart text-6xl mb-6">💗</div>
+        <h1 class="text-3xl font-bold text-pink-700 mb-4 font-['Dancing_Script']">Привет...</h1>
+        <p class="text-gray-600 mb-6">Я хочу передать что-то очень важное</p>
+        <p class="text-gray-500 mb-4">Пожалуйста, введи её имя:</p>
+        <input 
+            type="text" 
+            id="herName" 
+            placeholder="Её имя..." 
+            class="w-full px-6 py-4 text-center text-lg rounded-full border-2 border-pink-300 focus:border-pink-500 focus:outline-none mb-4"
+        >
+        <button 
+            onclick="showLoveMessage()" 
+            class="w-full py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-semibold rounded-full hover:from-pink-600 hover:to-rose-600 transition-all transform hover:scale-105 shadow-lg"
+        >
+            Открыть сердце 💕
+        </button>
+    </div>
+
+    <!-- Страница со стихами -->
+    <div id="lovePage" class="hidden text-center p-8 bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl max-w-2xl w-full mx-4">
+        <div class="heart text-5xl mb-4">💘</div>
+        <h1 id="greeting" class="text-3xl font-bold text-pink-700 mb-6 font-['Dancing_Script']"></h1>
+        
+        <div class="space-y-6 text-left">
+            <div class="bg-pink-50 p-6 rounded-2xl border-l-4 border-pink-400">
+                <p class="text-lg text-gray-700 italic leading-relaxed" id="poem1"></p>
+            </div>
+            
+            <div class="bg-rose-50 p-6 rounded-2xl border-l-4 border-rose-400">
+                <p class="text-lg text-gray-700 italic leading-relaxed" id="poem2"></p>
+            </div>
+        </div>
+        
+        <div class="mt-8 p-6 bg-gradient-to-r from-pink-100 to-rose-100 rounded-2xl">
+            <p class="text-xl text-pink-800 font-semibold mb-4 font-['Dancing_Script']">Моё искреннее признание:</p>
+            <p class="text-gray-700 leading-relaxed" id="confession"></p>
+        </div>
+        
+        <button 
+            onclick="resetSite()" 
+            class="mt-6 px-8 py-3 bg-gradient-to-r from-rose-400 to-pink-400 text-white rounded-full hover:from-rose-500 hover:to-pink-500 transition-all transform hover:scale-105 shadow-lg"
+        >
+            Начать снова
+        </button>
+        
+        <button 
+            onclick="downloadPage()" 
+            class="mt-4 px-8 py-3 bg-gradient-to-r from-pink-400 to-red-400 text-white rounded-full hover:from-pink-500 hover:to-red-500 transition-all transform hover:scale-105 shadow-lg"
+        >
+            Подарить сердце 💝
+        </button>
+        
+        <button 
+            onclick="copyLink()" 
+            class="mt-4 ml-2 px-8 py-3 bg-gradient-to-r from-red-400 to-pink-400 text-white rounded-full hover:from-red-500 hover:to-pink-500 transition-all transform hover:scale-105 shadow-lg"
+        >
+            Скопировать ссылку 💌
+        </button>
+    </div>
+
+    <script>
+        function createPetals() {
+            const symbols = ['🌸', '💐', '🌹', '🌺', '🌷', '💖', '💓'];
+            for (let i = 0; i < 10; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'petal';
+                petal.style.left = Math.random() * 100 + 'vw';
+                petal.style.top = '-30px';
+                petal.style.width = Math.random() * 25 + 15 + 'px';
+                petal.style.height = petal.style.width;
+                petal.style.animationDuration = Math.random() * 3 + 2 + 's';
+                petal.innerHTML = symbols[Math.floor(Math.random() * symbols.length)];
+                petal.style.fontSize = '20px';
+                document.body.appendChild(petal);
+                
+                setTimeout(() => petal.remove(), 5000);
+            }
+        }
+        
+        setInterval(createPetals, 1000);
+
+        function createSparkle(x, y) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.style.left = x + 'px';
+            sparkle.style.top = y + 'px';
+            sparkle.style.width = '20px';
+            sparkle.style.height = '20px';
+            document.body.appendChild(sparkle);
+            
+            setTimeout(() => sparkle.remove(), 1500);
+        }
+
+        document.addEventListener('mousemove', function(e) {
+            if (Math.random() > 0.95) {
+                createSparkle(e.clientX, e.clientY);
+            }
+        });
+
+        function showLoveMessage() {
+            const name = document.getElementById('herName').value.trim() || 'прекрасная';
+            
+            document.getElementById('namePage').classList.add('hidden');
+            document.getElementById('lovePage').classList.remove('hidden');
+            
+            // Анимация появления контента
+            document.getElementById('lovePage').style.opacity = '0';
+            document.getElementById('lovePage').style.transform = 'scale(0.9)';
+            document.getElementById('lovePage').style.transition = 'all 0.5s ease';
+            
+            setTimeout(() => {
+                document.getElementById('lovePage').style.opacity = '1';
+                document.getElementById('lovePage').style.transform = 'scale(1)';
+            }, 100);
+            
+            document.getElementById('greeting').innerHTML = '<span class="typing">' + name + '...</span>';
+            
+            const poems = [
+                name + ', я просыпаюсь с мыслью о тебе — и это боль,\n' +
+                'Когда ты далека, мир лишь серый и пустой.\n' +
+                'Каждое утро напоминает: где ты? Где наш свет?\n' +
+                'Я один, но сердце всё поёт: "Хочу быть с тобой!"\n\n' +
+                'Ты — как весна, как первый луч, как нежный аромат,\n' +
+                'Ты — мой вдох, мой сон, моя вечная звезда.\n' +
+                'Прости, если я редко говорил "ты — мой свет",\n' +
+                'Я хочу снова рядом быть, я хочу быть с тобой вновь.',
+                
+                'Я беру перо, чтобы написать тебе она,\n' +
+                'Как бытие моё — ты, как жизнь мне нужна.\n' +
+                name + ', не позволь нам упряться со сроком долгим,\n' +
+                'Дай нам шанс вновь начать, как строки эти пусты.\n\n' +
+                'Мы с тобой — это стих, что живёт в сердце моём,\n' +
+                'Мы с тобой — это мечта, что я не боюсь вновь.\n' +
+                'Пусть был большой разлушь — я пройдусь сквозь огонь,\n' +
+                'Лишь бы вернул тебя в объятия родные.'
+            ];
+            
+            const confessions = [
+                name + ', я хочу снова быть с тобой. Каждый день без тебя научил меня ценить твоё присутствие. Я готов измениться ради наших отношений, потому что ты — самое ценное в моей жизни. Прошу тебя, дай мне шанс исправить свои ошибки и вернуться в твои объятия.',
+                
+                'Я понимаю, что больше не должен обижать тебя. Каждое мгновение без тебя — это боль, которую я сам себе создал. ' + name + ', я хочу снова быть с тобой, потому что без тебя мне нечего терять. Прости меня, если можешь.',
+                
+                'Моё сердце больше не будет равно твоим словам признания. ' + name + ', я хочу снова быть с тобой — не как раньше, а лучше. Я выучу ценить каждый твой миг, каждый твой взгляд, каждое "спасибо" за ещё один день вместе. Дай нам второй шанс, пожалуйста.'
+            ];
+            
+            document.getElementById('poem1').textContent = poems[0];
+            document.getElementById('poem2').textContent = poems[1];
+            document.getElementById('confession').textContent = confessions[Math.floor(Math.random() * confessions.length)];
+            
+            createPetals();
+        }
+        
+        function resetSite() {
+            document.getElementById('herName').value = '';
+            document.getElementById('lovePage').classList.add('hidden');
+            document.getElementById('namePage').classList.remove('hidden');
+        }
+        
+        function downloadPage() {
+            alert('Отправь эту страницу ей 💕\nСкажи: "Это для тебя..."');
+        }
+        
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('Ссылка скопирована! Отправь ей этот сайт 💖');
+            });
+        }
+        
+        document.getElementById('herName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                showLoveMessage();
+            }
+        });
+    </script>
+</body>
+</html>
